@@ -85,7 +85,9 @@ function loadWorkspace() {
       const history = Array.isArray(saved.history)
         ? saved.history.filter((entry) =>
             entry && typeof entry.agent === "string" && typeof entry.path === "string"
-            && typeof entry.summary === "string" && Number.isFinite(entry.time),
+            && typeof entry.summary === "string" && Number.isFinite(entry.time)
+            && (entry.before === undefined || typeof entry.before === "string")
+            && (entry.after === undefined || typeof entry.after === "string"),
           )
         : [];
       return { files: { ...defaults, ...files }, history };
@@ -287,3 +289,121 @@ document.addEventListener("keydown", (event) => {
 renderFiles();
 renderHistory();
 selectFile(activePath);
+
+const diffBackdrop = document.querySelector("#diff-backdrop");
+const diffTitle = document.querySelector("#diff-title");
+const diffAgent = document.querySelector("#diff-agent");
+const diffTime = document.querySelector("#diff-time");
+const diffContent = document.querySelector("#diff-content");
+const diffRestore = document.querySelector("#diff-restore");
+let activeDiffEntry = null;
+
+function buildLineDiff(before, after) {
+  const oldLines = before.split("\n");
+  const newLines = after.split("\n");
+  const table = Array.from({ length: oldLines.length + 1 }, () =>
+    new Array(newLines.length + 1).fill(0),
+  );
+
+  for (let i = oldLines.length - 1; i >= 0; i -= 1) {
+    for (let j = newLines.length - 1; j >= 0; j -= 1) {
+      table[i][j] = oldLines[i] === newLines[j]
+        ? table[i + 1][j + 1] + 1
+        : Math.max(table[i + 1][j], table[i][j + 1]);
+    }
+  }
+
+  const rows = [];
+  let i = 0;
+  let j = 0;
+  let oldLine = 1;
+  let newLine = 1;
+  while (i < oldLines.length && j < newLines.length) {
+    if (oldLines[i] === newLines[j]) {
+      rows.push({ type: "same", oldNumber: oldLine++, newNumber: newLine++, text: oldLines[i] });
+      i += 1;
+      j += 1;
+    } else if (table[i + 1][j] >= table[i][j + 1]) {
+      rows.push({ type: "removed", oldNumber: oldLine++, newNumber: "", text: oldLines[i] });
+      i += 1;
+    } else {
+      rows.push({ type: "added", oldNumber: "", newNumber: newLine++, text: newLines[j] });
+      j += 1;
+    }
+  }
+  while (i < oldLines.length) {
+    rows.push({ type: "removed", oldNumber: oldLine++, newNumber: "", text: oldLines[i++] });
+  }
+  while (j < newLines.length) {
+    rows.push({ type: "added", oldNumber: "", newNumber: newLine++, text: newLines[j++] });
+  }
+  return rows;
+}
+
+function openDiff(entry) {
+  if (entry.before === undefined || entry.after === undefined) return;
+  activeDiffEntry = entry;
+  diffTitle.textContent = entry.path;
+  diffAgent.textContent = `${entry.agent} · ${entry.summary}`;
+  diffTime.textContent = formatTime(entry.time);
+  diffContent.replaceChildren();
+  buildLineDiff(entry.before, entry.after).forEach((row) => {
+    const element = document.createElement("div");
+    element.className = `diff-row ${row.type}`;
+    const oldNumber = document.createElement("span");
+    oldNumber.textContent = row.oldNumber;
+    const newNumber = document.createElement("span");
+    newNumber.textContent = row.newNumber;
+    const text = document.createElement("code");
+    text.textContent = row.text || " ";
+    element.append(oldNumber, newNumber, text);
+    diffContent.append(element);
+  });
+  diffRestore.disabled = false;
+  diffBackdrop.hidden = false;
+  document.querySelector("#diff-close").focus();
+}
+
+function closeDiff() {
+  diffBackdrop.hidden = true;
+  activeDiffEntry = null;
+}
+
+document.querySelector("#diff-close").addEventListener("click", closeDiff);
+document.querySelector("#diff-cancel").addEventListener("click", closeDiff);
+diffBackdrop.addEventListener("click", (event) => {
+  if (event.target === diffBackdrop) closeDiff();
+});
+
+diffRestore.addEventListener("click", () => {
+  if (!activeDiffEntry) return;
+  const entry = activeDiffEntry;
+  const before = workspace.files[entry.path];
+  const previousHistory = workspace.history;
+  if (typeof before !== "string") return;
+
+  workspace.files[entry.path] = entry.after;
+  workspace.history.unshift({
+    agent: agentSelect.value,
+    path: entry.path,
+    summary: `Vraćena verzija iz ${formatTime(entry.time)}`,
+    time: Date.now(),
+    before,
+    after: entry.after,
+  });
+  workspace.history = workspace.history.slice(0, 40);
+  if (!persist()) {
+    workspace.files[entry.path] = before;
+    workspace.history = previousHistory;
+    return;
+  }
+
+  closeDiff();
+  selectFile(entry.path);
+  renderFiles();
+  renderHistory();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !diffBackdrop.hidden) closeDiff();
+});
