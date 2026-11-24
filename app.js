@@ -77,7 +77,19 @@ const saveButton = document.querySelector("#save-button");
 function loadWorkspace() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (saved && saved.files && saved.history) return saved;
+    if (saved && saved.files && typeof saved.files === "object" && !Array.isArray(saved.files)) {
+      const defaults = Object.fromEntries(seedFiles.map((file) => [file.path, file.content]));
+      const files = Object.fromEntries(
+        Object.entries(saved.files).filter(([, content]) => typeof content === "string"),
+      );
+      const history = Array.isArray(saved.history)
+        ? saved.history.filter((entry) =>
+            entry && typeof entry.agent === "string" && typeof entry.path === "string"
+            && typeof entry.summary === "string" && Number.isFinite(entry.time),
+          )
+        : [];
+      return { files: { ...defaults, ...files }, history };
+    }
   } catch (error) {
     console.warn("Nije moguće pročitati sačuvani workspace.", error);
   }
@@ -108,7 +120,7 @@ function iconFor(path) {
 
 function renderFiles() {
   const query = search.value.trim().toLowerCase();
-  const paths = seedFiles.map((file) => file.path).filter((path) => path.toLowerCase().includes(query));
+  const paths = Object.keys(workspace.files).filter((path) => path.toLowerCase().includes(query));
   fileList.replaceChildren();
   paths.forEach((path) => {
     const extension = path.split(".").pop();
@@ -132,10 +144,11 @@ function renderFiles() {
     button.addEventListener("click", () => selectFile(path));
     fileList.append(button);
   });
-  document.querySelector("#file-count").textContent = `${seedFiles.length} FAJLOVA`;
+  document.querySelector("#file-count").textContent = `${Object.keys(workspace.files).length} FAJLOVA`;
 }
 
 function selectFile(path) {
+  if (typeof workspace.files[path] !== "string") return;
   activePath = path;
   editor.value = workspace.files[path];
   updateEditor();
@@ -170,8 +183,16 @@ function formatTime(timestamp) {
 function summarizeChange(before, after) {
   const oldLines = before.split("\n");
   const newLines = after.split("\n");
-  const changed = Math.max(1, Math.abs(oldLines.length - newLines.length));
-  return `${changed} ${changed === 1 ? "red" : "reda"} · sadržaj ažuriran`;
+  let start = 0;
+  while (start < oldLines.length && start < newLines.length && oldLines[start] === newLines[start]) start += 1;
+  let oldEnd = oldLines.length - 1;
+  let newEnd = newLines.length - 1;
+  while (oldEnd >= start && newEnd >= start && oldLines[oldEnd] === newLines[newEnd]) {
+    oldEnd -= 1;
+    newEnd -= 1;
+  }
+  const changed = Math.max(1, oldEnd - start + 1, newEnd - start + 1);
+  return `${changed} ${changed === 1 ? "red" : "redova"} · sadržaj ažuriran`;
 }
 
 function renderHistory() {
@@ -219,6 +240,7 @@ saveButton.addEventListener("click", () => {
   if (editor.value === workspace.files[activePath]) return;
   const before = workspace.files[activePath];
   const after = editor.value;
+  const previousHistory = workspace.history;
   workspace.files[activePath] = after;
   workspace.history.unshift({
     agent: agentSelect.value,
@@ -229,7 +251,7 @@ saveButton.addEventListener("click", () => {
   workspace.history = workspace.history.slice(0, 40);
   if (!persist()) {
     workspace.files[activePath] = before;
-    workspace.history.shift();
+    workspace.history = previousHistory;
     return;
   }
   updateEditor();
