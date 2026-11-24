@@ -1,0 +1,7 @@
+{
+  "name": "model-playground",
+  "private": true,
+  "scripts": {
+    "test": "node --test"
+  }
+}

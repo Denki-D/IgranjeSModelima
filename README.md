@@ -6,6 +6,10 @@ Mali, statički workspace za eksperimentiranje s primjerima datoteka i bilježen
 
 Otvori `index.html` u modernom web-pregledniku. Aplikacija nema ovisnosti i ne treba instalaciju ni build.
 
+## Automatska provjera kvalitete koda
+
+Pokreni `npm test` lokalno uz Node.js 18 ili noviji. GitHub Actions automatski pokreće istu provjeru pri svakom pushu i pull requestu; nema dodatnih paketa ni koraka instalacije.
+
 ## Korištenje
 
 - Odaberi datoteku iz popisa workspacea i uređuj njezin sadržaj.
