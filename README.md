@@ -10,6 +10,8 @@ Otvori `index.html` u modernom web-pregledniku. Aplikacija nema ovisnosti i ne t
 
 Pokreni `npm test` lokalno uz Node.js 18 ili noviji. GitHub Actions automatski pokreće istu provjeru pri svakom pushu i pull requestu; nema dodatnih paketa ni koraka instalacije.
 
+Dependabot jednom tjedno provjerava ima li novih verzija GitHub Actions i grupira ažuriranja u pull requestove.
+
 ## Korištenje
 
 - Odaberi datoteku iz popisa workspacea i uređuj njezin sadržaj.
