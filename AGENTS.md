@@ -12,6 +12,8 @@ Open `index.html` directly in a modern browser. No build or install step is need
 
 Run `npm test` with Node.js 18 or newer. GitHub Actions runs the same check on pushes and pull requests; no package installation is required.
 
+Dependabot checks GitHub Actions versions weekly; its configuration is in `.github/dependabot.yml`.
+
 ## App behavior
 
 Sample workspace files are defined in `seedFiles` in `app.js`. User edits and history are stored in the browser's `localStorage` under `model-playground-v1`; they are not written to project files or synchronized between browsers.
