@@ -208,7 +208,19 @@ function renderHistory() {
   }
   entries.forEach((entry) => {
     const item = document.createElement("div");
-    item.className = "history-entry";
+    item.className = `history-entry${entry.before !== undefined && entry.after !== undefined ? " clickable" : ""}`;
+    if (entry.before !== undefined && entry.after !== undefined) {
+      item.tabIndex = 0;
+      item.setAttribute("role", "button");
+      item.setAttribute("aria-label", `Pregledaj izmjenu fajla ${entry.path}`);
+      item.addEventListener("click", () => openDiff(entry));
+      item.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openDiff(entry);
+        }
+      });
+    }
     const avatar = document.createElement("span");
     avatar.className = "history-avatar";
     avatar.textContent = entry.agent.slice(0, 1).toUpperCase();
@@ -247,6 +259,8 @@ saveButton.addEventListener("click", () => {
     path: activePath,
     summary: summarizeChange(before, after),
     time: Date.now(),
+    before,
+    after,
   });
   workspace.history = workspace.history.slice(0, 40);
   if (!persist()) {

@@ -95,6 +95,26 @@
         <span>Napravljen za istraživanje <span class="footer-heart">✳</span></span>
       </footer>
     </main>
+    <div class="diff-backdrop" id="diff-backdrop" hidden>
+      <section class="diff-dialog" role="dialog" aria-modal="true" aria-labelledby="diff-title">
+        <header class="diff-header">
+          <div>
+            <p class="eyebrow">VERZIJA IZMJENE</p>
+            <h2 id="diff-title"></h2>
+          </div>
+          <button id="diff-close" class="icon-button" type="button" aria-label="Zatvori pregled">×</button>
+        </header>
+        <div class="diff-meta">
+          <span id="diff-agent"></span>
+          <span id="diff-time"></span>
+        </div>
+        <div id="diff-content" class="diff-content"></div>
+        <footer class="diff-footer">
+          <button id="diff-cancel" class="secondary-button" type="button">Zatvori</button>
+          <button id="diff-restore" class="restore-button" type="button">Vrati ovu verziju</button>
+        </footer>
+      </section>
+    </div>
     <script src="app.js"></script>
   </body>
 </html>
