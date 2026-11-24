@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="hr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#10131b">
+    <title>Model Playground</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Model Playground početna">
+        <span class="brand-mark">◎</span>
+        <span>model<span class="brand-muted">playground</span></span>
+      </a>
+      <div class="workspace-label"><span class="status-dot"></span> Lokalni workspace</div>
+      <label class="agent-picker">
+        <span>Aktivni agent</span>
+        <select id="agent-select" aria-label="Odaberi agenta">
+          <option>Codex</option>
+          <option>Claude</option>
+          <option>Copilot</option>
+          <option>Gemini</option>
+        </select>
+      </label>
+    </header>
+
+    <main class="app-shell">
+      <section class="intro">
+        <div>
+          <p class="eyebrow">MODEL WORKSPACE <span>·</span> SANDBOX</p>
+          <h1>Ideje, u pokretu.</h1>
+          <p class="intro-copy">Mali prostor za eksperimente. Pregledaj fajlove, isprobaj izmjene i prati šta je koji agent promijenio.</p>
+        </div>
+        <div class="intro-chip"><span class="spark">✳</span> Tvoj prostor za probu</div>
+      </section>
+
+      <section class="workspace" aria-label="Radni prostor">
+        <aside class="file-panel panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">PROJEKT</p>
+              <h2>playground-files</h2>
+            </div>
+            <span class="file-count" id="file-count"></span>
+          </div>
+          <label class="search-box">
+            <span aria-hidden="true">⌕</span>
+            <input id="file-search" type="search" placeholder="Pronađi fajl..." autocomplete="off">
+            <kbd>⌘ K</kbd>
+          </label>
+          <div class="tree-label">WORKSPACE</div>
+          <nav id="file-list" class="file-list" aria-label="Fajlovi projekta"></nav>
+          <div class="sidebar-note">
+            <span class="note-icon">✦</span>
+            <p><strong>Eksperimenti su lokalni.</strong><br>Izmjene se čuvaju u ovom pregledniku.</p>
+          </div>
+        </aside>
+
+        <section class="editor-panel panel">
+          <div class="editor-toolbar">
+            <div class="breadcrumbs"><span>playground-files</span><span class="crumb-sep">/</span><strong id="active-path"></strong></div>
+            <div class="editor-actions">
+              <span class="unsaved" id="unsaved-indicator" hidden>● Nespremljeno</span>
+              <button id="save-button" class="save-button" type="button">Sačuvaj izmjene <span>↗</span></button>
+            </div>
+          </div>
+          <div class="file-meta">
+            <span class="file-type" id="file-type"></span>
+            <span id="last-updated">Ogledni fajl</span>
+          </div>
+          <textarea id="file-editor" spellcheck="false" aria-label="Sadržaj fajla"></textarea>
+          <div class="editor-footer">
+            <span id="line-count">1 red</span>
+            <span>Izmjene bilježi odabrani agent <span class="footer-agent" id="footer-agent">Codex</span></span>
+          </div>
+        </section>
+
+        <aside class="history-panel panel">
+          <div class="history-heading">
+            <div>
+              <p class="eyebrow">AKTIVNOST</p>
+              <h2>Historija izmjena</h2>
+            </div>
+            <span class="history-live"><span class="status-dot"></span> LIVE</span>
+          </div>
+          <p class="history-caption">Nedavne izmjene u ovom workspaceu</p>
+          <div id="history-list" class="history-list"></div>
+          <div class="history-footnote">ℹ <span>Početna historija je primjer. Nove izmjene bilježi odabrani agent; aplikacija ne detektuje automatski ko je mijenjao fajl.</span></div>
+        </aside>
+      </section>
+
+      <footer class="page-footer">
+        <span>MODEL PLAYGROUND <span class="footer-sep">/</span> PRIVATNI WORKSPACE</span>
+        <span>Napravljen za istraživanje <span class="footer-heart">✳</span></span>
+      </footer>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
